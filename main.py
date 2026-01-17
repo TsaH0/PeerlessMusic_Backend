@@ -68,7 +68,8 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[],  # Empty list when using regex or credentials with multiple origins
+    allow_origin_regex="https?://.*",  # Allow all http/https origins for dev
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -324,7 +325,7 @@ async def create_new_identity(data: IdentityCreate, response: Response):
 
     # Check if username exists
     if username_exists(data.username):
-        raise HTTPException(status_code=409, detail="Username already taken")
+        raise HTTPException(status_code=409, detail="conflict in the usernames choose another one")
 
     # Create identity
     user_id = generate_user_id()
