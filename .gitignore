@@ -10,3 +10,5 @@ peerless_music.db
 .coverage
 htmlcov/
 .DS_Store
+single_script.py
+
