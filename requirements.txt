@@ -32,6 +32,8 @@ urllib3==2.6.3
 uvicorn==0.40.0
 uvloop==0.22.1
 watchfiles==1.1.1
+requests==2.32.3
+Pillow==11.0.0
 websockets==16.0
 wheel==0.45.1
 yt-dlp==2025.12.8
