@@ -14,6 +14,7 @@ from cloudinary_service import (
     check_thumbnail_exists,
     generate_track_id,
     get_all_tracks,
+    get_track_metadata,
     upload_audio,
     upload_thumbnail_from_url,
 )
@@ -211,6 +212,23 @@ async def get_library():
 
 @app.get("/api/stream/{video_id}", response_model=StreamResponse)
 async def stream_track(video_id: str, background_tasks: BackgroundTasks):
+    # First, check if video_id is actually a track_id (cached track in Cloudinary)
+    # This handles playlist tracks that were added from the Library
+    # Check if video_id is actually a track_id (cached track in Cloudinary)
+    track_meta = get_track_metadata(video_id)
+    if track_meta:
+        # This is a track_id, not a video_id - return cached track directly
+        return StreamResponse(
+            track_id=video_id,
+            title=track_meta["title"],
+            artist=track_meta["artist"],
+            thumbnail=track_meta["thumbnail"],
+            duration=track_meta["duration"],
+            audio_url=track_meta["audio_url"],
+            cached=True,
+        )
+
+    # Otherwise, treat video_id as a YouTube video ID and search
     search_results = search_youtube(video_id, max_results=1)
 
     if not search_results:
@@ -325,7 +343,9 @@ async def create_new_identity(data: IdentityCreate, response: Response):
 
     # Check if username exists
     if username_exists(data.username):
-        raise HTTPException(status_code=409, detail="conflict in the usernames choose another one")
+        raise HTTPException(
+            status_code=409, detail="conflict in the usernames choose another one"
+        )
 
     # Create identity
     user_id = generate_user_id()
